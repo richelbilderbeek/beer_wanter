@@ -1,0 +1,129 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+env:
+  QT_VERSION: 6.8.3
+  # The Emscripten version that this Qt version is built with,
+  # see https://doc.qt.io/qt-6/wasm.html
+  EMSCRIPTEN_VERSION: 3.1.56
+
+jobs:
+  desktop:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: ~/Qt
+          key: qt-desktop-${{ env.QT_VERSION }}
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -qq libboost-test-dev libgl1-mesa-dev \
+            libxcb-cursor0 libxkbcommon-x11-0 ninja-build
+          pipx install aqtinstall
+      - name: Install Qt
+        run: |
+          [ -d ~/Qt/$QT_VERSION/gcc_64 ] || \
+            aqt install-qt -O ~/Qt linux desktop $QT_VERSION linux_gcc_64
+      - name: Build
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_PREFIX_PATH=$HOME/Qt/$QT_VERSION/gcc_64
+          cmake --build build
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+      - name: Run the game for some seconds
+        run: |
+          status=0
+          QT_QPA_PLATFORM=offscreen timeout 5 build/BeerWanterDesktop || status=$?
+          # 124: still running when the timeout hit, which is what we want
+          [ "$status" -eq 124 ]
+      - name: Package
+        run: |
+          cmake --install build --prefix BeerWanter-linux-x86_64
+          tar -czf BeerWanter-linux-x86_64.tar.gz BeerWanter-linux-x86_64
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BeerWanter-linux-x86_64
+          path: BeerWanter-linux-x86_64.tar.gz
+          if-no-files-found: error
+
+  wasm:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: ~/Qt
+          key: qt-wasm-${{ env.QT_VERSION }}
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -qq ninja-build
+          pipx install aqtinstall
+      - uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: ${{ env.EMSCRIPTEN_VERSION }}
+      - name: Install Qt
+        run: |
+          # The desktop version is needed for moc, uic and rcc
+          [ -d ~/Qt/$QT_VERSION/gcc_64 ] || \
+            aqt install-qt -O ~/Qt linux desktop $QT_VERSION linux_gcc_64
+          [ -d ~/Qt/$QT_VERSION/wasm_singlethread ] || \
+            aqt install-qt -O ~/Qt all_os wasm $QT_VERSION wasm_singlethread
+      - name: Build
+        run: |
+          ~/Qt/$QT_VERSION/wasm_singlethread/bin/qt-cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DQT_HOST_PATH=$HOME/Qt/$QT_VERSION/gcc_64
+          cmake --build build
+      - name: Collect
+        run: |
+          mkdir wasm
+          cp build/BeerWanterDesktop.html build/BeerWanterDesktop.js \
+            build/BeerWanterDesktop.wasm build/qtloader.js build/qtlogo.svg wasm/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BeerWanter-wasm
+          path: wasm
+          if-no-files-found: error
+
+  site:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: [desktop, wasm]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the website
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: docs
+          destination: _site
+      - uses: actions/download-artifact@v4
+        with:
+          name: BeerWanter-wasm
+          path: wasm
+      - name: Add the game to the website
+        # _site is owned by root, as it is created from a container
+        run: sudo cp -r wasm _site/wasm
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: site
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

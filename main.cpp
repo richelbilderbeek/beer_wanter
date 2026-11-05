@@ -1,7 +1,6 @@
 #include "beerwantermenudialog.h"
 
-int main(int argc, char * argv[])
+int main()
 {
-  const std::vector<std::string> args { ribi::MenuDialog::ConvertArguments(argc,argv) };
-  return ribi::BeerWanterMenuDialog().Execute(args);
+  return ribi::BeerWanterMenuDialog().Execute();
 }

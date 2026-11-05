@@ -21,68 +21,40 @@ along with this program.If not, see <http://www.gnu.org/licenses/>.
 //---------------------------------------------------------------------------
 #include "beerwantermenudialog.h"
 
-#include <cassert>
-#include <cstdlib>
 #include <iostream>
-#include <sstream>
-#include <stdexcept>
 
-
-
-#include <QFile>
-
-#include "beerwantermaindialog.h"
-#include "fileio.h"
-
-
-
-
-int ribi::BeerWanterMenuDialog::ExecuteSpecific(
-  const std::vector<std::string>&
-) noexcept
+int ribi::BeerWanterMenuDialog::Execute() const
 {
-  std::cout
-    << std::endl
-    << GetAbout().GetFileTitle() << " cannot be run in console mode\n"
-    << std::endl;
+  std::cout << "\nBeerWanter cannot be run in console mode\n" << std::endl;
   return 0;
 }
 
-ribi::About ribi::BeerWanterMenuDialog::GetAbout() const noexcept
+std::string ribi::BeerWanterMenuDialog::GetAboutText() const
 {
-  About a(
-    "Richel Bilderbeek",
-    "BeerWanter",
-    "a simple game",
-    "the 19th of March 2016",
-    "2005-2016",
-    "http://www.richelbilderbeek.nl/GameBeerWanter.htm",
-    GetVersion(),
-    GetVersionHistory());
-  return a;
-}
-
-ribi::Help ribi::BeerWanterMenuDialog::GetHelp() const noexcept
-{
-  return Help(
-    GetAbout().GetFileTitle(),
-    GetAbout().GetFileDescription(),
-    {
-      Help::Option('s',"show","show a beer")
-    },
-    {
-      GetAbout().GetFileTitle() + " --show"
-    }
-  );
+  std::string text
+    = "BeerWanter, version " + GetVersion() + "\n"
+      "A simple game\n"
+      "\n"
+      "Copyright (C) 2005-2026 Richel Bilderbeek\n"
+      "Licensed under the GNU General Public License, version 3 or later\n"
+      "\n"
+      "https://github.com/richelbilderbeek/beer_wanter\n"
+      "\n"
+      "Version history:\n";
+  for (const std::string& version: GetVersionHistory())
+  {
+    text += " - " + version + "\n";
+  }
+  return text;
 }
 
 std::string ribi::BeerWanterMenuDialog::GetVersion() const noexcept
 {
-  return "8.0";
+  return "9.0";
 }
 
 std::vector<std::string>
-ribi::BeerWanterMenuDialog::GetVersionHistory() const noexcept
+ribi::BeerWanterMenuDialog::GetVersionHistory() const
 {
   return {
     "2005-11-16: version 1.0: (at that time called) 'Beerwanter 1' was "
@@ -116,5 +88,8 @@ ribi::BeerWanterMenuDialog::GetVersionHistory() const noexcept
     "2015-12-17: version 7.4: cleaning up",
     "2016-03-19: version 8.0: use of Boost.Test",
     "2016-08-26: version 8.2: removed NDS support, use of OCLint",
+    "2026-11-05: version 9.0: port to Qt6 and CMake, removed dependencies on "
+      "RibiClasses and Boost for the game itself, added WebAssembly build "
+      "that can be played in a browser",
   };
 }

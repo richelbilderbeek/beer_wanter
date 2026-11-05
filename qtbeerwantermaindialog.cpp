@@ -1,37 +1,35 @@
 #include "qtbeerwantermaindialog.h"
 
-#include <iostream>
-
 #include "beerwantermaindialog.h"
 #include "qtbeerwanterwidget.h"
 
 #include "ui_qtbeerwantermaindialog.h"
 
 ribi::QtBeerWanterMainDialog::QtBeerWanterMainDialog(QWidget *parent)
-  : QtHideAndShowDialog(parent),
+  : QDialog(parent),
     ui(new Ui::QtBeerWanterMainDialog),
     m_widget(new QtBeerWanterWidget)
 {
   ui->setupUi(this);
-  ui->beerwanter_layout->addWidget(m_widget.get());
-  this->setGeometry(
+  #ifdef Q_OS_WASM
+  //The page is the frame, the player can leave using Escape
+  setWindowFlag(Qt::FramelessWindowHint);
+  #endif
+  ui->beerwanter_layout->addWidget(m_widget);
+  setGeometry(
     m_widget->GetBeerWanter()->GetWindowX(),
     m_widget->GetBeerWanter()->GetWindowY(),
     m_widget->GetBeerWanter()->GetWindowWidth(),
     m_widget->GetBeerWanter()->GetWindowHeight()
   );
 
-  QObject::connect(
-    m_widget.get(),
-    SIGNAL(LevelUp(const std::string&)),
-    this,
-    SLOT(ChangeTitle(const std::string&))
+  connect(
+    m_widget, &QtBeerWanterWidget::LevelUp,
+    this, &QtBeerWanterMainDialog::ChangeTitle
   );
-  QObject::connect(
-    m_widget.get(),
-    SIGNAL(DoShake(const int,const int)),
-    this,
-    SLOT(OnShake(const int, const int))
+  connect(
+    m_widget, &QtBeerWanterWidget::DoShake,
+    this, &QtBeerWanterMainDialog::OnShake
   );
 }
 
@@ -40,13 +38,12 @@ ribi::QtBeerWanterMainDialog::~QtBeerWanterMainDialog() noexcept
   delete ui;
 }
 
-void ribi::QtBeerWanterMainDialog::ChangeTitle(const std::string& title) noexcept
+void ribi::QtBeerWanterMainDialog::ChangeTitle(const QString& title)
 {
-  this->setWindowTitle(title.c_str());
+  setWindowTitle(title);
 }
 
-void ribi::QtBeerWanterMainDialog::OnShake(const int x, const int y) noexcept
+void ribi::QtBeerWanterMainDialog::OnShake(const int x, const int y)
 {
-  this->setGeometry(x, y, this->width(), this->height());
-  this->repaint();
+  setGeometry(x, y, width(), height());
 }
