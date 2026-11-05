@@ -22,20 +22,22 @@ along with this program.If not, see <http://www.gnu.org/licenses/>.
 #ifndef BEERWANTERMENUDIALOG_H
 #define BEERWANTERMENUDIALOG_H
 
-#include "menudialog.h"
+#include <string>
+#include <vector>
 
 namespace ribi {
 
-struct BeerWanterMenuDialog final : public ::ribi::MenuDialog
+struct BeerWanterMenuDialog
 {
-  BeerWanterMenuDialog() {}
-  About GetAbout() const noexcept override;
-  Help GetHelp() const noexcept override;
-  std::string GetVersion() const noexcept override;
-  std::vector<std::string> GetVersionHistory() const noexcept override;
+  ///The text shown by the about screen
+  std::string GetAboutText() const;
 
-  private:
-  int ExecuteSpecific(const std::vector<std::string>& argv) noexcept override;
+  std::string GetVersion() const noexcept;
+  std::vector<std::string> GetVersionHistory() const;
+
+  ///Start the command line version.
+  ///Returns the error code to give back to the operating system
+  int Execute() const;
 };
 
 } //~namespace ribi

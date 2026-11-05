@@ -37,16 +37,17 @@ struct BeerWanterMainDialog
   int GetWindowWidth()  const noexcept { return m_window_width ; }
   int GetWindowX() const noexcept { return m_window_x; }
   int GetWindowY() const noexcept { return m_window_y; }
-  void SetArenaSize(const int width, const int height);
   void SetCursorPos(const int x, const int y);
-  void SetSpriteSize(const int width, const int height);
+
+  ///Keep the window on the screen. A browser canvas is a tiny 'screen'
+  ///that a shaken window would otherwise leave
+  void ClampWindowToScreen() noexcept;
 
   ///ShakeCursor shakes the cursor
   void ShakeCursor();
 
-  ///ShakeWindow shakes the window (on desktop computer only)
+  ///ShakeWindow shakes the window
   void ShakeWindow();
-  void Tick();
 
   private:
   int m_cursor_x;

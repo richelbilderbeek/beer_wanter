@@ -19,8 +19,8 @@
    <string>BeerWanter</string>
   </property>
   <property name="windowIcon">
-   <iconset>
-    <normaloff>:/PicR.png</normaloff>:/PicR.png</iconset>
+   <iconset resource="BeerWanter.qrc">
+    <normaloff>:/GameBeerWanter/images/PicR.png</normaloff>:/GameBeerWanter/images/PicR.png</iconset>
   </property>
   <property name="styleSheet">
    <string notr="true">QDialog { 
@@ -35,7 +35,7 @@ QPushButton { font: 48px, &quot;Verdana&quot; }</string>
       <string/>
      </property>
      <property name="pixmap">
-      <pixmap resource="GameBeerWanter.qrc">:/GameBeerWanter/images/PicBeer.png</pixmap>
+      <pixmap resource="BeerWanter.qrc">:/GameBeerWanter/images/PicBeer.png</pixmap>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -75,7 +75,7 @@ QPushButton { font: 48px, &quot;Verdana&quot; }</string>
   </layout>
  </widget>
  <resources>
-  <include location="GameBeerWanter.qrc"/>
+  <include location="BeerWanter.qrc"/>
  </resources>
  <connections/>
 </ui>

@@ -22,11 +22,7 @@ along with this program.If not, see <http://www.gnu.org/licenses/>.
 #ifndef QTBEERWANTERMAINDIALOG_H
 #define QTBEERWANTERMAINDIALOG_H
 
-
-
-#include <boost/shared_ptr.hpp>
-#include "qthideandshowdialog.h"
-
+#include <QDialog>
 
 namespace Ui {
   class QtBeerWanterMainDialog;
@@ -34,27 +30,26 @@ namespace Ui {
 
 namespace ribi {
 
-struct QtBeerWanterWidget;
+class QtBeerWanterWidget;
 
-class QtBeerWanterMainDialog : public QtHideAndShowDialog
+class QtBeerWanterMainDialog : public QDialog
 {
   Q_OBJECT //!OCLINT
 
 public:
-  explicit QtBeerWanterMainDialog(QWidget *parent = 0);
+  explicit QtBeerWanterMainDialog(QWidget *parent = nullptr);
   QtBeerWanterMainDialog(const QtBeerWanterMainDialog&) = delete;
   QtBeerWanterMainDialog& operator=(const QtBeerWanterMainDialog&) = delete;
   ~QtBeerWanterMainDialog() noexcept;
 private:
   Ui::QtBeerWanterMainDialog *ui;
-  boost::shared_ptr<QtBeerWanterWidget> m_widget;
+  QtBeerWanterWidget * m_widget;
 
 private slots:
-  void ChangeTitle(const std::string& title) noexcept;
-  void OnShake(const int x, const int y) noexcept;
+  void ChangeTitle(const QString& title);
+  void OnShake(const int x, const int y);
 };
 
 } //~namespace ribi
 
 #endif // QTBEERWANTERMAINDIALOG_H
-
