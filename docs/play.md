@@ -1,3 +1,7 @@
+---
+title: Play BeerWanter
+---
+
 # Play BeerWanter
 
 Click on the beer. Press Escape to go back to the menu.
