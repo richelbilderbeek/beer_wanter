@@ -1,4 +1,5 @@
-# BeerWanter
+# Beer Wanter
+
 
 [![Build](https://github.com/richelbilderbeek/beer_wanter/actions/workflows/build.yml/badge.svg)](https://github.com/richelbilderbeek/beer_wanter/actions/workflows/build.yml)
 

@@ -1,17 +1,7 @@
----
-title: Play BeerWanter
----
+# Play Beer Wanter
 
-# Play BeerWanter
+<!-- markdownlint-disable MD033 --><!-- Need HTML here -->
 
-Click on the beer. Press Escape to go back to the menu.
+<iframe src="game/beer_wanter.html" scrolling="no" style="border: 0"></iframe>
 
-<iframe
-  src="wasm/BeerWanterDesktop.html"
-  title="BeerWanter"
-  style="display: block; width: 100%; max-width: 640px; aspect-ratio: 1; border: 0;"
-></iframe>
-
-The game is the real C++/Qt6 program, compiled to WebAssembly. If you are
-reading this page on GitHub itself, the game will not show: play it at
-<https://richelbilderbeek.github.io/beer_wanter/play.html> instead.
+<!-- markdownlint-enable MD033 -->

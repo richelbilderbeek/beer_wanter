@@ -38,3 +38,4 @@ build/
 build-*/
 *.pro.user
 CMakeLists.txt.user
+site/
