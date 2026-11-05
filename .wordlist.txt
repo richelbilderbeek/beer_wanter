@@ -72,3 +72,8 @@ Tetralith
 matplotlib
 seaborn
 NAISS
+BeerWanter
+Bilderbeek's
+Emscripten
+Wanter
+WebAssembly
