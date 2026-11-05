@@ -78,6 +78,8 @@ jobs:
             aqt install-qt -O ~/Qt all_os wasm $QT_VERSION wasm_singlethread
       - name: Build
         run: |
+          # aqtinstall does not always keep the executable bit of this script
+          chmod +x ~/Qt/$QT_VERSION/wasm_singlethread/bin/qt-cmake
           ~/Qt/$QT_VERSION/wasm_singlethread/bin/qt-cmake -S . -B build -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DQT_HOST_PATH=$HOME/Qt/$QT_VERSION/gcc_64

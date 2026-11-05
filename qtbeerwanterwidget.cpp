@@ -67,6 +67,7 @@ void ribi::QtBeerWanterWidget::mouseMoveEvent(QMouseEvent * event)
 void ribi::QtBeerWanterWidget::mousePressEvent(QMouseEvent * event)
 {
   assert(event);
+  Q_UNUSED(event) //Only used by the WebAssembly build, and assert
   #ifdef Q_OS_WASM
   //A touch screen has no mouse moves before a press
   const QPoint cursor = event->position().toPoint() + m_cursor_offset;
