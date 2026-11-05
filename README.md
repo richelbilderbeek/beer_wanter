@@ -1,16 +1,13 @@
-# BeerWanter
+# Beer Wanter
 
-Branch|[![Travis CI logo](TravisCI.png)](https://travis-ci.org)|[![Codecov logo](Codecov.png)](https://www.codecov.io)
----|---|---
-master|[![Build Status](https://travis-ci.org/richelbilderbeek/BeerWanter.svg?branch=master)](https://travis-ci.org/richelbilderbeek/BeerWanter) | [![codecov.io](https://codecov.io/github/richelbilderbeek/BeerWanter/coverage.svg?branch=master)](https://codecov.io/github/richelbilderbeek/BeerWanter?branch=master)
-develop|[![Build Status](https://travis-ci.org/richelbilderbeek/BeerWanter.svg?branch=develop)](https://travis-ci.org/richelbilderbeek/BeerWanter) | [![codecov.io](https://codecov.io/github/richelbilderbeek/BeerWanter/coverage.svg?branch=develop)](https://codecov.io/github/richelbilderbeek/BeerWanter?branch=develop)
+[Go to the nicely rendered website](https://richelbilderbeek.github.io/beer_wanter/).
 
-[Game](https://github.com/richelbilderbeek/Games) in which you have to click on the beer, written in C++ using Qt.
+## Files used by continuous integration scripts
 
-![BeerWanter menu v7.4](Screenshots/BeerWanterMenu_7_4.png)
-
-![BeerWanter v7.4](Screenshots/BeerWanter_7_4.png)
-
-## External links
-
- * [Richel Bilderbeek's games](https://github.com/richelbilderbeek/Games)
+Filename                                  |Descriptions
+------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------
+[mlc_config.json](mlc_config.json)        |Configuration of the link checker, use `markdown-link-check --config mlc_config.json --quiet docs/**/*.md` to do link checking locally
+[.spellcheck.yml](.spellcheck.yml)        |Configuration of the spell checker, use `pyspelling -c .spellcheck.yml` to do spellcheck locally
+[.wordlist.txt](.wordlist.txt)            |Whitelisted words for the spell checker, use `pyspelling -c .spellcheck.yml` to do spellcheck locally
+[.markdownlint.jsonc](.markdownlint.jsonc)|Configuration of the markdown linter, use `markdownlint "**/*.md"` to do markdown linting locally. The name of this file is a default name.
+[.markdownlintignore](.markdownlintignore)|Files ignored by the markdown linter, use `markdownlint "**/*.md"` to do markdown linting locally. The name of this file is a default name.
