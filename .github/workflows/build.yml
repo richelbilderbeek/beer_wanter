@@ -45,7 +45,7 @@ jobs:
           [ "$status" -eq 124 ]
       - name: Package
         run: |
-          cmake --install build --prefix BeerWanter-linux-x86_64
+          cmake --install build --prefix "$PWD/BeerWanter-linux-x86_64"
           tar -czf BeerWanter-linux-x86_64.tar.gz BeerWanter-linux-x86_64
       - uses: actions/upload-artifact@v4
         with:
