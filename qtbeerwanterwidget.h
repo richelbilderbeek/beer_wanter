@@ -22,62 +22,54 @@ along with this program.If not, see <http://www.gnu.org/licenses/>.
 #ifndef QTBEERWANTERWIDGET_H
 #define QTBEERWANTERWIDGET_H
 
-#include <tuple>
+#include <memory>
 
-
-
-#include <boost/scoped_ptr.hpp>
-#include <boost/shared_ptr.hpp>
+#include <QColor>
+#include <QPixmap>
+#include <QPoint>
+#include <QTimer>
 #include <QWidget>
+
 #include "beerwantermaindialog.h"
 
-
-struct QMouseEvent;
-struct QPixmap;
-struct QTimer;
+class QMouseEvent;
+class QPaintEvent;
 
 namespace ribi {
-
-struct BeerWanterMainDialog;
 
 class QtBeerWanterWidget : public QWidget
 {
   Q_OBJECT //!OCLINT
 
 public:
-  explicit QtBeerWanterWidget(QWidget *parent = 0);
+  explicit QtBeerWanterWidget(QWidget *parent = nullptr);
   const BeerWanterMainDialog * GetBeerWanter() const;
 
+protected:
+  void mouseMoveEvent(QMouseEvent * event) override;
+  void mousePressEvent(QMouseEvent * event) override;
+  void paintEvent(QPaintEvent * event) override;
+
 private:
-  std::tuple<int,int,int> m_background_rgb;
+  QColor m_background;
 
-  std::string m_debug_text;
+  ///A browser does not allow moving the real cursor, so there the
+  ///game hides it and draws its own cursor at the shaken position.
+  ///This is the distance from the real cursor to the one drawn.
+  ///Always zero on desktop, where the real cursor is moved
+  QPoint m_cursor_offset;
 
-  boost::scoped_ptr<BeerWanterMainDialog> m_dialog;
+  std::unique_ptr<BeerWanterMainDialog> m_dialog;
 
-  boost::shared_ptr<QPixmap> m_sprite;
-  boost::shared_ptr<QTimer> m_timer;
+  QPixmap m_sprite;
+  QTimer m_timer;
 
-private slots:
-  void mouseMoveEvent(QMouseEvent * event);
-  void mousePressEvent(QMouseEvent * event);
   void onTimer();
-  void paintEvent(QPaintEvent *);
 
 signals:
   void DoShake(const int x, const int y);
-  void LevelUp(const std::string&);
-
+  void LevelUp(const QString& title);
 };
-
-//From http://www.richelbilderbeek.nl/CppPaint.htm
-void MyPaint(
-  QPixmap& pixmap,
-  const unsigned char r,
-  const unsigned char g,
-  const unsigned char b,
-  const unsigned char a = 255
-); //Opaque
 
 ///Modify the color value by [-1,1], keep it in [0, 255] range
 int Modify(const int color) noexcept;
@@ -85,4 +77,3 @@ int Modify(const int color) noexcept;
 } //~namespace ribi
 
 #endif // QTBEERWANTERWIDGET_H
-

@@ -2,9 +2,6 @@
 <ui version="4.0">
  <class>QtBeerWanterMainDialog</class>
  <widget class="QDialog" name="QtBeerWanterMainDialog">
-  <property name="windowModality">
-   <enum>Qt::ApplicationModal</enum>
-  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -13,18 +10,12 @@
     <height>520</height>
    </rect>
   </property>
-  <property name="minimumSize">
-   <size>
-    <width>520</width>
-    <height>520</height>
-   </size>
-  </property>
   <property name="windowTitle">
    <string>BeerWanter (C) 2005-2016 Richel Bilderbeek. Beer gotten: 0</string>
   </property>
   <property name="windowIcon">
-   <iconset>
-    <normaloff>:/PicR.png</normaloff>:/PicR.png</iconset>
+   <iconset resource="BeerWanter.qrc">
+    <normaloff>:/GameBeerWanter/images/PicR.png</normaloff>:/GameBeerWanter/images/PicR.png</iconset>
   </property>
   <property name="layoutDirection">
    <enum>Qt::LeftToRight</enum>
@@ -50,6 +41,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="BeerWanter.qrc"/>
+ </resources>
  <connections/>
 </ui>

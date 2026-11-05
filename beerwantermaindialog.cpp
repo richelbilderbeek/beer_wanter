@@ -1,11 +1,7 @@
 #include "beerwantermaindialog.h"
 
+#include <algorithm>
 #include <cstdlib>
-#include <iostream>
-#include <sstream>
-#include <stdexcept>
-
-#include <boost/lexical_cast.hpp>
 
 ribi::BeerWanterMainDialog::BeerWanterMainDialog(
   int screen_width,
@@ -70,10 +66,20 @@ int ribi::BeerWanterMainDialog::GetRandomWindowShake() const
     - ((m_level-1)/4);
 }
 
+void ribi::BeerWanterMainDialog::ClampWindowToScreen() noexcept
+{
+  m_window_x = std::clamp(
+    m_window_x, 0, std::max(0, m_screen_width - m_window_width)
+  );
+  m_window_y = std::clamp(
+    m_window_y, 0, std::max(0, m_screen_height - m_window_height)
+  );
+}
+
 std::string ribi::BeerWanterMainDialog::GetWindowTitle() const
 {
   return "BeerWanter (C) 2005-2016 Richel Bilderbeek. Beer gotten: "
-    + boost::lexical_cast<std::string>(m_level - 1);
+    + std::to_string(m_level - 1);
 }
 
 void ribi::BeerWanterMainDialog::SetCursorPos(const int x, const int y)

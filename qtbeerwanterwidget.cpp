@@ -1,61 +1,54 @@
 #include "qtbeerwanterwidget.h"
 
-#include <iostream>
+#include <algorithm>
+#include <cassert>
+#include <cstdlib>
 
-#include <boost/lexical_cast.hpp>
-
-#include <QApplication>
-#include <QDesktopWidget>
-#include <QGraphicsPixmapItem>
-#include <QGraphicsScene>
-#include <QGraphicsView>
-#include <QImage>
+#include <QCursor>
+#include <QGuiApplication>
 #include <QMouseEvent>
-#include <QTimer>
-#include <QVBoxLayout>
-
-#include "beerwantermaindialog.h"
+#include <QPainter>
+#include <QScreen>
 
 ribi::QtBeerWanterWidget::QtBeerWanterWidget(QWidget *parent)
   : QWidget(parent),
-    m_background_rgb(
-      std::make_tuple(
-        (0xff + 0xff)/2, //Average redness in stylesheet of menu
-        (0xff + 0xc5)/2, //Average greenness in stylesheet of menu
-        (0x00 + 0x00)/2  //Average blueness in stylesheet of menu
-      )
+    m_background(
+      (0xff + 0xff)/2, //Average redness in stylesheet of menu
+      (0xff + 0xc5)/2, //Average greenness in stylesheet of menu
+      (0x00 + 0x00)/2  //Average blueness in stylesheet of menu
     ),
-    m_debug_text{},
+    m_cursor_offset{},
     m_dialog{},
-    m_sprite(new QPixmap(BeerWanterMainDialog::GetResourceFilename().c_str())),
-    m_timer(new QTimer)
+    m_sprite(BeerWanterMainDialog::GetResourceFilename().c_str()),
+    m_timer{}
 {
-  assert(!m_sprite.get()->isNull());
+  assert(!m_sprite.isNull());
 
-  this->setMouseTracking(true);
+  setMouseTracking(true);
 
-  m_dialog.reset(
-    new BeerWanterMainDialog(
-      QApplication::desktop()->width(),
-      QApplication::desktop()->height(),
-      m_sprite->width(),
-      m_sprite->height(),
-      520,
-      520
-    )
+  const QSize screen = QGuiApplication::primaryScreen()->size();
+  //A browser page can be smaller than the regular window size
+  const int window_size = std::min({520, screen.width(), screen.height()});
+
+  m_dialog = std::make_unique<BeerWanterMainDialog>(
+    screen.width(),
+    screen.height(),
+    m_sprite.width(),
+    m_sprite.height(),
+    window_size,
+    window_size
   );
 
   //Ensure the window does not get resized
-  this->setFixedHeight(m_dialog->GetWindowHeight());
-  this->setFixedWidth(m_dialog->GetWindowWidth());
+  setFixedHeight(m_dialog->GetWindowHeight());
+  setFixedWidth(m_dialog->GetWindowWidth());
 
-  m_timer->connect(
-    m_timer.get(),
-    SIGNAL(timeout()),
-    this,
-    SLOT(onTimer())
-  );
-  m_timer->start(20); //Framerate about (1000/20=) 50 fps
+  #ifdef Q_OS_WASM
+  setCursor(Qt::BlankCursor);
+  #endif
+
+  connect(&m_timer, &QTimer::timeout, this, &QtBeerWanterWidget::onTimer);
+  m_timer.start(20); //Framerate about (1000/20=) 50 fps
 }
 
 const ribi::BeerWanterMainDialog * ribi::QtBeerWanterWidget::GetBeerWanter() const
@@ -65,120 +58,101 @@ const ribi::BeerWanterMainDialog * ribi::QtBeerWanterWidget::GetBeerWanter() con
 
 void ribi::QtBeerWanterWidget::mouseMoveEvent(QMouseEvent * event)
 {
-  const int mouse_x = event->x();
-  const int mouse_y = event->y();
-  //#define DEBUG_SHOW_MOUSE_POSITION
-  #ifdef DEBUG_SHOW_MOUSE_POSITION
-  m_debug_text
-    = "MOVE: ("
-    + boost::lexical_cast<std::string>(mouse_x)
-    + ","
-    + boost::lexical_cast<std::string>(mouse_y)
-    + ")";
-  if (m_beerwanter->ClickWilBeSuccess())
-  {
-    m_debug_text += "-> CLICK WILL BE SUCCESS";
-  }
-  const int sprite_x = m_beerwanter->GetSpriteX();
-  const int sprite_y = m_beerwanter->GetSpriteX();
-  const int sprite_maxx = m_beerwanter->GetSpriteX() + m_beerwanter->GetSpriteWidth();
-  const int sprite_maxy = m_beerwanter->GetSpriteY() + m_beerwanter->GetSpriteHeight();
-  m_debug_text += ", Sprite: ("
-    + boost::lexical_cast<std::string>(sprite_x)
-    + ","
-    + boost::lexical_cast<std::string>(sprite_y)
-    + ")-("
-    + boost::lexical_cast<std::string>(sprite_maxx)
-    + ","
-    + boost::lexical_cast<std::string>(sprite_maxy)
-    + ")";
-  #endif
-  assert(event->type() == ::QMouseEvent::MouseMove);
   assert(event);
-  m_dialog->SetCursorPos(mouse_x,mouse_y);
-  this->repaint();
+  const QPoint cursor = event->position().toPoint() + m_cursor_offset;
+  m_dialog->SetCursorPos(cursor.x(), cursor.y());
+  update();
 }
 
-void ribi::QtBeerWanterWidget::mousePressEvent(QMouseEvent *)
+void ribi::QtBeerWanterWidget::mousePressEvent(QMouseEvent * event)
 {
-  //#define DEBUG_SHOW_MOUSE_CLICK_POSITION
-  #ifdef DEBUG_SHOW_MOUSE_CLICK_POSITION
-  const int mouse_x = event->x();
-  const int mouse_y = event->y();
-  m_debug_text
-    = "CLICK: ("
-    + boost::lexical_cast<std::string>(mouse_x)
-    + ","
-    + boost::lexical_cast<std::string>(mouse_y)
-    + ")";
+  assert(event);
+  Q_UNUSED(event) //Only used by the WebAssembly build, and assert
+  #ifdef Q_OS_WASM
+  //A touch screen has no mouse moves before a press
+  const QPoint cursor = event->position().toPoint() + m_cursor_offset;
+  m_dialog->SetCursorPos(cursor.x(), cursor.y());
   #endif
   if (m_dialog->Click())
   {
     //Inform user of level-up
-    emit LevelUp(m_dialog->GetWindowTitle());
+    emit LevelUp(QString::fromStdString(m_dialog->GetWindowTitle()));
   }
-  this->repaint();
+  update();
 }
 
 void ribi::QtBeerWanterWidget::onTimer()
 {
+  #ifdef Q_OS_WASM
+  const QPoint before(m_dialog->GetCursorX(), m_dialog->GetCursorY());
+  #endif
+
   m_dialog->ShakeCursor();
 
   const int mouse_x = m_dialog->GetCursorX();
   const int mouse_y = m_dialog->GetCursorY();
-  //#define DEBUG_SHOW_MOUSE_TIMER_POSITION
-  #ifdef DEBUG_SHOW_MOUSE_TIMER_POSITION
-  m_debug_text
-    = "ONTIMER: ("
-    + boost::lexical_cast<std::string>(mouse_x)
-    + ","
-    + boost::lexical_cast<std::string>(mouse_y)
-    + ")";
-  #endif
 
-  const QPoint base_pos = this->mapToGlobal(QPoint(0,0));
-  #ifdef DEBUG_SHOW_MOUSE_TIMER_POSITION
-  m_debug_text
-    += "-> ("
-    + boost::lexical_cast<std::string>(base_pos.x())
-    + ","
-    + boost::lexical_cast<std::string>(base_pos.y())
-    + ")";
+  #ifdef Q_OS_WASM
+  //Let the offset slowly fade: the real cursor stops at the edge of the page,
+  //from where a drawn cursor that wandered off could never be brought back
+  const int fade = 50;
+  m_cursor_offset += QPoint(mouse_x, mouse_y) - before;
+  const QPoint faded = m_cursor_offset - (m_cursor_offset / fade);
+  m_dialog->SetCursorPos(
+    mouse_x + faded.x() - m_cursor_offset.x(),
+    mouse_y + faded.y() - m_cursor_offset.y()
+  );
+  m_cursor_offset = faded;
+  #else
+  const QPoint base_pos = mapToGlobal(QPoint(0,0));
+  QCursor::setPos(base_pos.x() + mouse_x, base_pos.y() + mouse_y);
   #endif
-
-  this->cursor().setPos(
-    base_pos.x() + mouse_x,base_pos.y() + mouse_y);
 
   //Move window
   m_dialog->ShakeWindow();
+  #ifdef Q_OS_WASM
+  m_dialog->ClampWindowToScreen();
+  #endif
   //QtBeerWanterWidget cannot shake itself
   emit DoShake(m_dialog->GetWindowX(),m_dialog->GetWindowY());
-  this->repaint();
+  update();
 }
 
 void ribi::QtBeerWanterWidget::paintEvent(QPaintEvent *)
 {
   QPainter painter(this);
 
-  std::get<0>(m_background_rgb) = Modify(std::get<0>(m_background_rgb));
-  std::get<1>(m_background_rgb) = Modify(std::get<1>(m_background_rgb));
-  std::get<2>(m_background_rgb) = Modify(std::get<2>(m_background_rgb));
-
-  QPixmap p(this->width(),this->height());
-  MyPaint(
-    p,
-    std::get<0>(m_background_rgb),
-    std::get<1>(m_background_rgb),
-    std::get<2>(m_background_rgb)
+  m_background.setRgb(
+    Modify(m_background.red()),
+    Modify(m_background.green()),
+    Modify(m_background.blue())
   );
-  painter.drawPixmap(0,0,p);
+  painter.fillRect(rect(), m_background);
 
-  assert(m_sprite);
   painter.drawPixmap(
     m_dialog->GetSpriteX(),
     m_dialog->GetSpriteY(),
-    *m_sprite.get()
+    m_sprite
   );
+
+  #ifdef Q_OS_WASM
+  //There is no title bar to show the score in
+  painter.setPen(Qt::black);
+  painter.drawText(
+    rect().adjusted(8, 8, -8, -8),
+    Qt::AlignLeft | Qt::AlignTop,
+    QString("Beer gotten: %1 (Esc to quit)").arg(m_dialog->GetLevel() - 1)
+  );
+
+  const QPoint cursor(m_dialog->GetCursorX(), m_dialog->GetCursorY());
+  const int size = 8;
+  for (const QColor& color: {QColor(Qt::white), QColor(Qt::black)})
+  {
+    painter.setPen(QPen(color, color == Qt::white ? 4 : 2));
+    painter.drawLine(cursor - QPoint(size, 0), cursor + QPoint(size, 0));
+    painter.drawLine(cursor - QPoint(0, size), cursor + QPoint(0, size));
+  }
+  #endif
 }
 
 int ribi::Modify(const int color) noexcept
@@ -193,35 +167,4 @@ int ribi::Modify(const int color) noexcept
     return 0;
   }
   return new_color;
-}
-
-//From http://www.richelbilderbeek.nl/CppPaint.htm
-void ribi::MyPaint(
-  QPixmap& pixmap,
-  const unsigned char r,
-  const unsigned char g,
-  const unsigned char b,
-  const unsigned char a) //Opaque
-{
-  const int width = pixmap.width();
-  const int height = pixmap.height();
-
-  QImage image = pixmap.toImage();
-
-  assert(image.bytesPerLine() / width == 4
-    && "Assume there are 4 bytes per pixel");
-
-  for (int y=0; y!=height; ++y)
-  {
-    unsigned char * const line
-      = static_cast<unsigned char *>(image.scanLine(y));
-    for (int x=0; x!=width; ++x)
-    {
-      line[x*4+3] = a; //Alpha value
-      line[x*4+2] = r; //Red
-      line[x*4+1] = g; //Green
-      line[x*4+0] = b; //Blue
-    }
-  }
-  pixmap = pixmap.fromImage(image);
 }

@@ -19,23 +19,27 @@ along with this program.If not, see <http://www.gnu.org/licenses/>.
 //---------------------------------------------------------------------------
 //From http://www.richelbilderbeek.nl/GameBeerWanter.htm
 //---------------------------------------------------------------------------
-
-
 #include "qtbeerwantermenudialog.h"
 
-#include "beerwantermenudialog.h"
-#include "qtaboutdialog.h"
+#include <QGuiApplication>
+#include <QScreen>
+
+#include "qtbeerwanteraboutdialog.h"
 #include "qtbeerwantermaindialog.h"
 #include "ui_qtbeerwantermenudialog.h"
 
-
-
-
 ribi::QtBeerWanterMenuDialog::QtBeerWanterMenuDialog(QWidget *parent) :
-  QtHideAndShowDialog(parent),
+  QDialog(parent),
   ui(new Ui::QtBeerWanterMenuDialog)
 {
   ui->setupUi(this);
+  #ifdef Q_OS_WASM
+  //A web page cannot be quit, and the page is the frame
+  ui->button_quit->hide();
+  setWindowFlag(Qt::FramelessWindowHint);
+  adjustSize();
+  move(QGuiApplication::primaryScreen()->geometry().center() - rect().center());
+  #endif
 }
 
 ribi::QtBeerWanterMenuDialog::~QtBeerWanterMenuDialog() noexcept
@@ -43,23 +47,38 @@ ribi::QtBeerWanterMenuDialog::~QtBeerWanterMenuDialog() noexcept
   delete ui;
 }
 
-void ribi::QtBeerWanterMenuDialog::on_button_start_clicked() noexcept
+void ribi::QtBeerWanterMenuDialog::on_button_start_clicked()
 {
-  QtBeerWanterMainDialog d;
-  this->ShowChild(&d);
+  ShowChild(new QtBeerWanterMainDialog);
 }
 
-void ribi::QtBeerWanterMenuDialog::on_button_about_clicked() noexcept
+void ribi::QtBeerWanterMenuDialog::on_button_about_clicked()
 {
-  About a = BeerWanterMenuDialog().GetAbout();
-  a.AddLibrary("QtHideAndShowDialog version: " + QtHideAndShowDialog::GetVersion());
-  QtAboutDialog d(a);
-  d.setStyleSheet(this->styleSheet());
-  d.setWindowIcon(this->windowIcon());
-  this->ShowChild(&d);
+  auto * const d = new QtBeerWanterAboutDialog;
+  d->setStyleSheet(styleSheet());
+  d->setWindowIcon(windowIcon());
+  const QSize screen = QGuiApplication::primaryScreen()->size();
+  d->resize(qMin(800, screen.width()), qMin(500, screen.height()));
+  ShowChild(d);
 }
 
-void ribi::QtBeerWanterMenuDialog::on_button_quit_clicked() noexcept
+void ribi::QtBeerWanterMenuDialog::on_button_quit_clicked()
 {
   close();
+}
+
+void ribi::QtBeerWanterMenuDialog::reject()
+{
+  #ifndef Q_OS_WASM
+  QDialog::reject();
+  #endif
+  //In a browser, closing the menu would leave an empty page
+}
+
+void ribi::QtBeerWanterMenuDialog::ShowChild(QDialog * const dialog)
+{
+  dialog->setAttribute(Qt::WA_DeleteOnClose);
+  connect(dialog, &QDialog::finished, this, &QtBeerWanterMenuDialog::show);
+  hide();
+  dialog->show();
 }

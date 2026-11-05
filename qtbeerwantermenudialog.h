@@ -22,7 +22,7 @@ along with this program.If not, see <http://www.gnu.org/licenses/>.
 #ifndef QTBEERWANTERMENUDIALOG_H
 #define QTBEERWANTERMENUDIALOG_H
 
-#include "qthideandshowdialog.h"
+#include <QDialog>
 
 namespace Ui {
 class QtBeerWanterMenuDialog;
@@ -30,24 +30,32 @@ class QtBeerWanterMenuDialog;
 
 namespace ribi {
 
-class QtBeerWanterMenuDialog : public QtHideAndShowDialog
+class QtBeerWanterMenuDialog : public QDialog
 {
   Q_OBJECT //!OCLINT
 
 public:
   QtBeerWanterMenuDialog(const QtBeerWanterMenuDialog&) = delete;
   QtBeerWanterMenuDialog& operator=(const QtBeerWanterMenuDialog&) = delete;
-  explicit QtBeerWanterMenuDialog(QWidget *parent = 0);
+  explicit QtBeerWanterMenuDialog(QWidget *parent = nullptr);
   ~QtBeerWanterMenuDialog() noexcept;
+
+public slots:
+  void reject() override;
 
 private slots:
 
-  void on_button_start_clicked() noexcept;
-  void on_button_about_clicked() noexcept;
-  void on_button_quit_clicked() noexcept;
+  void on_button_start_clicked();
+  void on_button_about_clicked();
+  void on_button_quit_clicked();
 
 private:
   Ui::QtBeerWanterMenuDialog *ui;
+
+  ///Hide this dialog and show the child, until the child is closed.
+  ///Does not use a nested event loop (that is, QDialog::exec),
+  ///as a browser cannot run these
+  void ShowChild(QDialog * const dialog);
 };
 
 } //~namespace ribi
