@@ -45,7 +45,7 @@ jobs:
           [ "$status" -eq 124 ]
       - name: Package
         run: |
-          cmake --install build --prefix BeerWanter-linux-x86_64
+          cmake --install build --prefix "$PWD/BeerWanter-linux-x86_64"
           tar -czf BeerWanter-linux-x86_64.tar.gz BeerWanter-linux-x86_64
       - uses: actions/upload-artifact@v4
         with:
@@ -94,38 +94,3 @@ jobs:
           name: BeerWanter-wasm
           path: wasm
           if-no-files-found: error
-
-  site:
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-    needs: [desktop, wasm]
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
-      - name: Build the website
-        uses: actions/jekyll-build-pages@v1
-        with:
-          source: docs
-          destination: _site
-      - uses: actions/download-artifact@v4
-        with:
-          name: BeerWanter-wasm
-          path: wasm
-      - name: Add the game to the website
-        # _site is owned by root, as it is created from a container
-        run: sudo cp -r wasm _site/wasm
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: _site
-
-  deploy:
-    needs: site
-    runs-on: ubuntu-24.04
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
