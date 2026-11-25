@@ -1,0 +1,54 @@
+# Check that the program can be built,
+# that its tests pass and measure the code coverage
+name: Check build
+
+on:
+  push:
+    paths:
+      - .github/workflows/check_build.yaml
+      - "**.cpp"
+      - "**.h"
+      - "**.qrc"
+      - "**.ui"
+      - CMakeLists.txt
+  pull_request:
+    paths:
+      - .github/workflows/check_build.yaml
+      - "**.cpp"
+      - "**.h"
+      - "**.qrc"
+      - "**.ui"
+      - CMakeLists.txt
+
+jobs:
+  check_build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install Qt and other dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qt6-base-dev libgl1-mesa-dev libboost-test-dev
+
+      - name: Build the game and the tests, with code coverage
+        run: |
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS=--coverage -DCMAKE_EXE_LINKER_FLAGS=--coverage
+          cmake --build build -j$(nproc)
+
+      - name: Run the tests
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Measure code coverage
+        run: |
+          pip install gcovr
+          gcovr --root . --exclude 'build/.*' --exclude '.*_test\.cpp' --print-summary --xml coverage.xml
+
+      - name: Upload code coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: coverage.xml
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
