@@ -1,5 +1,6 @@
 # Beer Wanter
 
+[![codecov](https://codecov.io/gh/richelbilderbeek/beer_wanter/branch/main/graph/badge.svg)](https://codecov.io/gh/richelbilderbeek/beer_wanter)
 
 [![Build](https://github.com/richelbilderbeek/beer_wanter/actions/workflows/build.yml/badge.svg)](https://github.com/richelbilderbeek/beer_wanter/actions/workflows/build.yml)
 
