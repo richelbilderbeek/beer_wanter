@@ -5,6 +5,7 @@ name: Create Zensical website
 # The website contains the WebAssembly game,
 # hence it is created from a finished 'Build' workflow
 on:
+  workflow_dispatch:
   workflow_run:
     workflows:
       - Build
