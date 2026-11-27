@@ -1,8 +1,15 @@
 # Beer Wanter
 
-[![codecov](https://codecov.io/gh/richelbilderbeek/beer_wanter/branch/main/graph/badge.svg)](https://codecov.io/gh/richelbilderbeek/beer_wanter)
+<!-- markdownlint-disable MD013 --><!-- Badges cannot be split up over lines, hence will break 80 characters per line -->
 
-[![Build](https://github.com/richelbilderbeek/beer_wanter/actions/workflows/build.yml/badge.svg)](https://github.com/richelbilderbeek/beer_wanter/actions/workflows/build.yml)
+[![Check build](https://github.com/richelbilderbeek/beer_wanter/actions/workflows/check_build.yaml/badge.svg?branch=main)](https://github.com/richelbilderbeek/beer_wanter/actions/workflows/check_build.yaml)
+[![check_links](https://github.com/richelbilderbeek/beer_wanter/actions/workflows/check_links.yaml/badge.svg?branch=main)](https://github.com/richelbilderbeek/beer_wanter/actions/workflows/check_links.yaml)
+[![Check markdown](https://github.com/richelbilderbeek/beer_wanter/actions/workflows/check_markdown.yaml/badge.svg?branch=main)](https://github.com/richelbilderbeek/beer_wanter/actions/workflows/check_markdown.yaml)
+[![Check spelling](https://github.com/richelbilderbeek/beer_wanter/actions/workflows/check_spelling.yaml/badge.svg?branch=main)](https://github.com/richelbilderbeek/beer_wanter/actions/workflows/check_spelling.yaml)
+[![codecov](https://codecov.io/gh/richelbilderbeek/beer_wanter/branch/main/graph/badge.svg)](https://codecov.io/gh/richelbilderbeek/beer_wanter)
+[![Create Zensical website](https://github.com/richelbilderbeek/beer_wanter/actions/workflows/create_zensical_website.yaml/badge.svg?branch=main)](https://github.com/richelbilderbeek/beer_wanter/actions/workflows/create_zensical_website.yaml)
+
+<!-- markdownlint-enable MD013 -->
 
 [Game](https://github.com/richelbilderbeek/Games) in which you have to click on the beer, written in C++ using Qt6.
 

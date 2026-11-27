@@ -49,6 +49,7 @@ Uppsala
 Wanter
 WebAssembly
 Yadav
+Zensical
 codecov
 coderefinery
 config
